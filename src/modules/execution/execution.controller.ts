@@ -1,9 +1,9 @@
 import { Controller, Post, Body, UseGuards, HttpCode, HttpStatus } from '@nestjs/common';
-import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
+import { AuthGuard } from '@nestjs/passport';
 import { ExecutionService } from './execution.service';
 
 @Controller('execution')
-@UseGuards(JwtAuthGuard)
+@UseGuards(AuthGuard('jwt'))
 export class ExecutionController {
   constructor(private readonly executionService: ExecutionService) {}
 

@@ -1,5 +1,5 @@
 import { Injectable, Logger, BadRequestException } from '@nestjs/common';
-import * as Docker from 'dockerode';
+import Docker from 'dockerode';
 import * as fs from 'fs/promises';
 import * as path from 'path';
 import * as os from 'os';
