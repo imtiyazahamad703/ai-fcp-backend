@@ -424,7 +424,7 @@ ${result.outputText}
    */
   async evaluateTestCases(
     files: { filename: string; content: string }[],
-    testCases: { description: string; input: any; expectedOutput: any; type: string }[],
+    testCases: { description: string; input?: any; expectedOutput?: any; type: string }[],
   ): Promise<{
     summary: { total: number; passed: number; failed: number };
     results: {
