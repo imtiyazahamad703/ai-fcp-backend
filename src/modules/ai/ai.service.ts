@@ -63,10 +63,38 @@ export class AiService {
         required: ['title', 'description', 'difficulty', 'starterCode', 'testCases'],
       };
 
-      const systemInstruction = `You are an expert ${type === 'react' ? 'React.js Frontend' : type === 'nestjs' ? 'NestJS Backend' : 'Full Stack (React + NestJS)'} instructor.
-Create a practical, real-world coding exercise for the topic: "${topic}".
-${type === 'fullstack' ? 'Ensure you provide starter files for both the frontend (React) and the backend (NestJS) so they can communicate with each other. This is often used for DSA applied in full-stack scenarios (e.g. sending a data structure from frontend to backend for processing and rendering the result).' : ''}
-The output must strictly adhere to the requested JSON schema.`;
+      const baseInstruction = `You are an Expert Senior Software Engineer and Technical Interviewer. Your task is to generate a production-ready coding exercise for an advanced AI-Powered Full-Stack Practice Platform.
+The topic is: "${topic}".
+
+PLATFORM MECHANICS:
+- The platform evaluates learners not just on algorithms, but on actual feature development.
+- Learners do not write projects from scratch. We provide a background template. You must provide the "starterCode" files.
+- Files marked with 'editable: true' MUST contain 'TODO' comments clearly indicating where the learner needs to write their logic. 
+- Files marked with 'editable: false' are supporting files (like interfaces, DTOs, or mock data) needed to make the code runnable.
+
+ENGINEERING STANDARDS:
+- Strictly use TypeScript. Avoid using 'any'.
+- Follow clean architecture, modular design, and industry best practices.
+- The problem description must be clear, engaging, and formatted in Markdown.
+
+CATEGORY SPECIFICS:`;
+
+      let categoryInstruction = '';
+      if (type === 'react') {
+        categoryInstruction = `- Focus on React.js, functional components, hooks, state management, and UI logic.
+- Typical editable file should be 'src/App.tsx' or a specific component.
+- Ensure the problem tests real-world frontend skills (e.g., form handling, data rendering, or Axios API simulation).`;
+      } else if (type === 'nestjs') {
+        categoryInstruction = `- Focus on NestJS, REST APIs, Services, and DTO validation.
+- Enforce the rule of Thin Controllers and logic inside Services.
+- Typical editable files should be 'src/feature/feature.controller.ts' and 'src/feature/feature.service.ts'.`;
+      } else if (type === 'fullstack') {
+        categoryInstruction = `- Focus on Full-Stack integration.
+- Provide at least one editable frontend file (e.g., React component making an Axios call) and one editable backend file (e.g., NestJS Service processing that specific request).
+- Ensure the frontend API call perfectly matches the backend route.`;
+      }
+
+      const systemInstruction = `${baseInstruction}\n${categoryInstruction}\n\nEnsure test case descriptions clearly explain the expected behavior. Return STRICTLY valid JSON matching the provided schema without any markdown wrapping the JSON.`;
 
       const response = await this.ai.models.generateContent({
         model: this.model,
