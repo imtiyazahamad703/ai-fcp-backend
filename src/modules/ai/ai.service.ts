@@ -10,7 +10,7 @@ import { GoogleGenAI, Type, Schema } from '@google/genai';
 export class AiService {
   private readonly logger = new Logger(AiService.name);
   private ai: GoogleGenAI;
-  private readonly model = 'gemini-2.5-flash';
+  private readonly model = 'gemini-1.5-flash';
 
   constructor(private readonly configService: ConfigService) {
     const apiKey = this.configService.get<string>('ai.gemini.apiKey');
