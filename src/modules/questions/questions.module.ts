@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Question, QuestionSchema } from './schemas/question.schema';
 import { QuestionsService } from './questions.service';
+import { QuestionsController } from './questions.controller';
 
 // ============================
 // Questions Module
@@ -13,6 +14,7 @@ import { QuestionsService } from './questions.service';
       { name: Question.name, schema: QuestionSchema },
     ]),
   ],
+  controllers: [QuestionsController],
   providers: [QuestionsService],
   exports: [QuestionsService],
 })
