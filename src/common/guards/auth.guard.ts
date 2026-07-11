@@ -1,21 +1,26 @@
 import {
   Injectable,
-  CanActivate,
   ExecutionContext,
   UnauthorizedException,
 } from '@nestjs/common';
+import { AuthGuard as PassportAuthGuard } from '@nestjs/passport';
 import { RESPONSE_MESSAGES } from '../constants';
 
-@Injectable()
-export class AuthGuard implements CanActivate {
-  canActivate(context: ExecutionContext): boolean {
-    const request = context.switchToHttp().getRequest();
-    const user = request.user;
+// ============================
+// JWT Auth Guard
+// Extends Passport's AuthGuard to use our JWT strategy
+// ============================
 
-    if (!user) {
+@Injectable()
+export class AuthGuard extends PassportAuthGuard('jwt') {
+  canActivate(context: ExecutionContext) {
+    return super.canActivate(context);
+  }
+
+  handleRequest<T>(err: any, user: T): T {
+    if (err || !user) {
       throw new UnauthorizedException(RESPONSE_MESSAGES.UNAUTHORIZED);
     }
-
-    return true;
+    return user;
   }
 }

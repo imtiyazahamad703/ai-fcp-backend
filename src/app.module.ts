@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import { CommonModule } from './common/common.module';
+import { AuthModule } from './modules/auth/auth.module';
 import {
   appConfig,
   databaseConfig,
@@ -30,6 +31,9 @@ import {
 
     // Common Module (Global filters, interceptors)
     CommonModule,
+
+    // Feature Modules
+    AuthModule,
   ],
 })
 export class AppModule {}
