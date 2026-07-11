@@ -26,7 +26,7 @@ export class ExecutionController {
     
     // Track progress if execution passed
     if (result.status === 'pass' && payload.questionId) {
-      await this.usersService.markQuestionCompleted(req.user.userId, payload.questionId);
+      await this.usersService.markQuestionCompleted(req.user._id, payload.questionId);
     }
     
     return {

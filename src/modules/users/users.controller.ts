@@ -13,7 +13,7 @@ export class UsersController {
    */
   @Get('profile')
   async getProfile(@Req() req: any) {
-    const user = await this.usersService.findById(req.user.userId);
+    const user = await this.usersService.findById(req.user._id);
     if (!user) {
       throw new Error('User not found');
     }
