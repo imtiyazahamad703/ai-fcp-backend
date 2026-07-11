@@ -20,7 +20,6 @@ export type QuestionDifficulty =
 
 export const QUESTION_TYPE = {
   REACT: 'react',
-  NESTJS: 'nestjs',
   FULLSTACK: 'fullstack',
 } as const;
 
