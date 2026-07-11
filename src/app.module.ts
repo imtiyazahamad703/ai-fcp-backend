@@ -3,6 +3,9 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import { CommonModule } from './common/common.module';
 import { AuthModule } from './modules/auth/auth.module';
+import { QuestionsModule } from './modules/questions/questions.module';
+import { AiModule } from './modules/ai/ai.module';
+import { AdminModule } from './modules/admin/admin.module';
 import {
   appConfig,
   databaseConfig,
@@ -34,6 +37,9 @@ import {
 
     // Feature Modules
     AuthModule,
+    QuestionsModule,
+    AiModule,
+    AdminModule,
   ],
 })
 export class AppModule {}
