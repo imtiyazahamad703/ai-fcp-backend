@@ -35,4 +35,35 @@ export class ExecutionController {
       output: result.output,
     };
   }
+
+  /**
+   * POST /api/execution/run-endpoint
+   * Dynamically executes a specific backend route with payload.
+   */
+  @Post('run-endpoint')
+  @HttpCode(HttpStatus.OK)
+  async runEndpoint(@Req() req: any, @Body() payload: { 
+    questionId: string; 
+    files: { filename: string; content: string }[];
+    method: string;
+    endpoint: string;
+    body: any;
+  }) {
+    if (!payload.files || payload.files.length === 0) {
+      return { status: 'fail', output: 'No files provided for execution.' };
+    }
+
+    const result = await this.executionService.executeDynamicEndpoint(
+      payload.files,
+      payload.method,
+      payload.endpoint,
+      payload.body
+    );
+    
+    return {
+      message: 'Dynamic execution completed',
+      status: result.status,
+      output: result.output,
+    };
+  }
 }

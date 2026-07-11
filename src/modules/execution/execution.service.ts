@@ -110,4 +110,172 @@ ${result.outputText}
       };
     }
   }
+
+  /**
+   * Execute submitted files dynamically based on endpoint and payload.
+   * This parses the user's modules and calls an exported class method or function.
+   */
+  async executeDynamicEndpoint(
+    files: { filename: string; content: string }[],
+    method: string,
+    endpoint: string,
+    body: any
+  ): Promise<{ output: any; status: 'pass' | 'fail' }> {
+    try {
+      const backendFiles = files.filter(f => f.filename.startsWith('backend/') || f.filename.endsWith('.ts'));
+      
+      if (backendFiles.length === 0) {
+        return {
+          output: { error: 'No backend code found to execute.' },
+          status: 'fail',
+        };
+      }
+
+      let combinedCode = `
+        require('reflect-metadata');
+        const __modules = {};
+        function __require(name) {
+           const basename = name.split('/').pop().replace('.ts', '');
+           const modKey = Object.keys(__modules).find(k => k.endsWith(basename));
+           if (modKey) return __modules[modKey].exports;
+           return require(name);
+        }
+      `;
+      
+      for (const file of backendFiles) {
+        const result = ts.transpileModule(file.content, {
+          compilerOptions: { 
+            module: ts.ModuleKind.CommonJS, 
+            target: ts.ScriptTarget.ES2020,
+            experimentalDecorators: true,
+            emitDecoratorMetadata: true
+          }
+        });
+        
+        const moduleName = file.filename.replace('.ts', '');
+        combinedCode += `
+__modules['${moduleName}'] = { exports: {} };
+(function(exports, require, module, __filename, __dirname) {
+${result.outputText}
+})(__modules['${moduleName}'].exports, __require, __modules['${moduleName}'], '${file.filename}', '');
+        `;
+      }
+
+      combinedCode += `
+        let __finalResult = null;
+        let __found = false;
+        const payload = ${JSON.stringify(body || {})};
+        
+        // 1. Collect all exported classes and functions
+        const classes = [];
+        for (const modKey of Object.keys(__modules)) {
+           const exported = __modules[modKey].exports;
+           for (const expKey of Object.keys(exported)) {
+              if (typeof exported[expKey] === 'function' && exported[expKey].toString().includes('class ')) {
+                 classes.push(exported[expKey]);
+              } else if (typeof exported[expKey] === 'function') {
+                 classes.push({ isFunc: true, func: exported[expKey] });
+              }
+           }
+        }
+        
+        // 2. Simple DI container
+        const instances = new Map();
+        function getInstance(Cls) {
+           if (instances.has(Cls)) return instances.get(Cls);
+           const paramTypes = Reflect.getMetadata('design:paramtypes', Cls) || [];
+           const params = paramTypes.map(type => {
+               const depCls = classes.find(c => c === type);
+               if (depCls) return getInstance(depCls);
+               return null;
+           });
+           const instance = new Cls(...params);
+           instances.set(Cls, instance);
+           return instance;
+        }
+        
+        // 3. Find the Controller or main class and invoke its method
+        for (const item of classes) {
+           if (item.isFunc) continue;
+           const Cls = item;
+           const isController = Cls.name.includes('Controller');
+           const hasControllerDecorators = Reflect.getMetadata('__controller__', Cls);
+           
+           if (isController || hasControllerDecorators || classes.filter(c => !c.isFunc).length === 1 || !classes.some(c => !c.isFunc && c.name?.includes('Controller'))) {
+              try {
+                  const instance = getInstance(Cls);
+                  const proto = Object.getPrototypeOf(instance);
+                  const methods = Object.getOwnPropertyNames(proto).filter(m => m !== 'constructor');
+                  
+                  if (methods.length > 0) {
+                     // Pass payload values as args to simulate @Query/@Body, plus full payload at end
+                     const args = (payload && typeof payload === 'object') ? Object.values(payload).map(String) : [payload];
+                     __finalResult = instance[methods[0]](...args, payload);
+                     __found = true;
+                     break;
+                  }
+              } catch(e) {
+                 // Try next class if instantiation fails
+              }
+           }
+        }
+        
+        // 4. Fallback to raw function if no class worked
+        if (!__found) {
+           for (const item of classes) {
+              if (item.isFunc) {
+                 try {
+                     __finalResult = item.func(payload);
+                     __found = true;
+                     break;
+                 } catch(e) {}
+              }
+           }
+        }
+        
+        if (!__found) {
+           throw new Error("Could not instantiate or find a suitable Controller/Class method to execute the request.");
+        }
+        
+        globalThis.__execResult = __finalResult;
+      `;
+
+      let capturedOutput = '';
+      const sandbox = {
+        console: {
+          log: (...args: any[]) => { capturedOutput += args.join(' ') + '\n'; },
+          error: (...args: any[]) => { capturedOutput += 'ERROR: ' + args.join(' ') + '\n'; },
+          warn: (...args: any[]) => { capturedOutput += 'WARN: ' + args.join(' ') + '\n'; }
+        },
+        require: require,
+        exports: {},
+        module: { exports: {} },
+        Reflect: Reflect,
+        globalThis: {} as any
+      };
+
+      vm.createContext(sandbox);
+
+      this.logger.log('Executing dynamic endpoint in Node VM');
+      const script = new vm.Script(combinedCode);
+      
+      script.runInContext(sandbox, {
+        timeout: 2000,
+      });
+
+      let execResult = sandbox.globalThis.__execResult;
+
+      return {
+        output: execResult !== undefined && execResult !== null ? execResult : capturedOutput.trim(),
+        status: 'pass',
+      };
+
+    } catch (error: any) {
+      this.logger.error(`VM Dynamic Execution failed: ${error.message}`);
+      return {
+        output: { error: error.message || 'Execution failed due to an error in your code.' },
+        status: 'fail',
+      };
+    }
+  }
 }
