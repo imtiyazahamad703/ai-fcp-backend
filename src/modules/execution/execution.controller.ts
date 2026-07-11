@@ -26,6 +26,7 @@ export class ExecutionController {
     @Body() payload: {
       questionId: string;
       files: { filename: string; content: string }[];
+      isSubmit?: boolean;
     },
   ) {
     if (!payload.files || payload.files.length === 0) {
@@ -65,24 +66,26 @@ export class ExecutionController {
       };
     }
 
-    // ---- Persist submission (upsert: one doc per user per question) ----
-    // Only save the editable files the user actually modified
-    const editableFiles = payload.files.filter((f) => {
-      const starterFile = question.starterCode.find((s) => s.filename === f.filename);
-      return starterFile?.editable !== false;
-    });
+    // Only save to DB and update progress if this is an actual submission
+    if (payload.isSubmit) {
+      // ---- Persist submission (upsert: one doc per user per question) ----
+      const editableFiles = payload.files.filter((f) => {
+        const starterFile = question.starterCode.find((s) => s.filename === f.filename);
+        return starterFile?.editable !== false;
+      });
 
-    await this.submissionsService.upsert(
-      req.user._id,
-      payload.questionId,
-      editableFiles,
-      status,
-      evaluationSummary,
-    );
+      await this.submissionsService.upsert(
+        req.user._id,
+        payload.questionId,
+        editableFiles,
+        status,
+        evaluationSummary,
+      );
 
-    // Mark as completed if fully passed
-    if (status === 'pass') {
-      await this.usersService.markQuestionCompleted(req.user._id, payload.questionId);
+      // Mark as completed if fully passed
+      if (status === 'pass') {
+        await this.usersService.markQuestionCompleted(req.user._id, payload.questionId);
+      }
     }
 
     return responsePayload;
