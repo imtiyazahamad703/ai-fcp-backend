@@ -91,7 +91,8 @@ CATEGORY SPECIFICS:`;
       } else if (type === 'fullstack') {
         categoryInstruction = `- Focus on Full-Stack integration.
 - Provide at least one editable frontend file (e.g., React component making an Axios call) and one editable backend file (e.g., NestJS Service processing that specific request).
-- Ensure the frontend API call perfectly matches the backend route.`;
+- Ensure the frontend API call perfectly matches the backend route.
+- STRICT RULE: The backend starter code MUST be written strictly using the NestJS framework (using @Controller(), @Injectable(), modules, etc.). DO NOT use plain Express.js.`;
       }
 
       const systemInstruction = `${baseInstruction}\n${categoryInstruction}\n\nEnsure test case descriptions clearly explain the expected behavior. Return STRICTLY valid JSON matching the provided schema without any markdown wrapping the JSON.`;
