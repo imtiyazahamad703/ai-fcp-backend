@@ -6,6 +6,6 @@ export class GenerateQuestionDto {
   topic: string;
 
   @IsString()
-  @IsEnum(['react', 'nestjs'])
-  type: 'react' | 'nestjs';
+  @IsEnum(['react', 'nestjs', 'fullstack'])
+  type: 'react' | 'nestjs' | 'fullstack';
 }

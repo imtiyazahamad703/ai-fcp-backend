@@ -25,7 +25,7 @@ export class AiService {
   /**
    * Generate a coding question based on a topic
    */
-  async generateQuestion(topic: string, type: 'react' | 'nestjs') {
+  async generateQuestion(topic: string, type: 'react' | 'nestjs' | 'fullstack') {
     this.logger.log(`Generating ${type} question for topic: ${topic}`);
 
     try {
@@ -40,7 +40,7 @@ export class AiService {
             items: {
               type: Type.OBJECT,
               properties: {
-                filename: { type: Type.STRING, description: 'e.g., src/App.tsx or src/main.ts' },
+                filename: { type: Type.STRING, description: 'e.g., src/App.tsx, backend/main.ts' },
                 content: { type: Type.STRING, description: 'The initial code' },
                 language: { type: Type.STRING, description: 'e.g., typescript, tsx' },
                 editable: { type: Type.BOOLEAN, description: 'Whether the learner can edit this file' },
@@ -63,8 +63,9 @@ export class AiService {
         required: ['title', 'description', 'difficulty', 'starterCode', 'testCases'],
       };
 
-      const systemInstruction = `You are an expert ${type === 'react' ? 'React.js Frontend' : 'NestJS Backend'} instructor.
+      const systemInstruction = `You are an expert ${type === 'react' ? 'React.js Frontend' : type === 'nestjs' ? 'NestJS Backend' : 'Full Stack (React + NestJS)'} instructor.
 Create a practical, real-world coding exercise for the topic: "${topic}".
+${type === 'fullstack' ? 'Ensure you provide starter files for both the frontend (React) and the backend (NestJS) so they can communicate with each other. This is often used for DSA applied in full-stack scenarios (e.g. sending a data structure from frontend to backend for processing and rendering the result).' : ''}
 The output must strictly adhere to the requested JSON schema.`;
 
       const response = await this.ai.models.generateContent({
