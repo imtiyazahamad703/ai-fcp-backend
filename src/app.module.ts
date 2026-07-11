@@ -6,6 +6,7 @@ import { AuthModule } from './modules/auth/auth.module';
 import { QuestionsModule } from './modules/questions/questions.module';
 import { AiModule } from './modules/ai/ai.module';
 import { AdminModule } from './modules/admin/admin.module';
+import { ExecutionModule } from './modules/execution/execution.module';
 import {
   appConfig,
   databaseConfig,
@@ -40,6 +41,7 @@ import {
     QuestionsModule,
     AiModule,
     AdminModule,
+    ExecutionModule,
   ],
 })
 export class AppModule {}
