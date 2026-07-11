@@ -2,6 +2,7 @@ import { Controller, Post, Body, UseGuards, HttpCode, HttpStatus, Req } from '@n
 import { AuthGuard } from '@nestjs/passport';
 import { ExecutionService } from './execution.service';
 import { UsersService } from '../users/users.service';
+import { QuestionsService } from '../questions/questions.service';
 
 @Controller('execution')
 @UseGuards(AuthGuard('jwt'))
@@ -9,11 +10,12 @@ export class ExecutionController {
   constructor(
     private readonly executionService: ExecutionService,
     private readonly usersService: UsersService,
+    private readonly questionsService: QuestionsService,
   ) {}
 
   /**
    * POST /api/execution/submit
-   * Submits learner code for execution in a Docker container.
+   * Evaluates learner code against the question's test cases.
    */
   @Post('submit')
   @HttpCode(HttpStatus.OK)
@@ -22,9 +24,31 @@ export class ExecutionController {
       return { status: 'fail', output: 'No files provided for execution.' };
     }
 
+    // Fetch the question to get its test cases
+    const question = await this.questionsService.findById(payload.questionId);
+    const testCases = question.visibleTests || [];
+
+    // If the question has test cases with input/expectedOutput, run evaluation
+    const hasEvaluatableTests = testCases.some(tc => tc.input !== undefined && tc.expectedOutput !== undefined);
+
+    if (hasEvaluatableTests) {
+      const evaluation = await this.executionService.evaluateTestCases(payload.files, testCases);
+
+      // Track progress if all tests passed
+      if (evaluation.summary.failed === 0 && payload.questionId) {
+        await this.usersService.markQuestionCompleted(req.user._id, payload.questionId);
+      }
+
+      return {
+        message: 'Evaluation completed',
+        status: evaluation.summary.failed === 0 ? 'pass' : 'fail',
+        evaluation,
+      };
+    }
+
+    // Fallback: legacy execution for questions without structured test cases
     const result = await this.executionService.executeCode(payload.files);
     
-    // Track progress if execution passed
     if (result.status === 'pass' && payload.questionId) {
       await this.usersService.markQuestionCompleted(req.user._id, payload.questionId);
     }

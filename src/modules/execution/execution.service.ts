@@ -418,4 +418,112 @@ ${result.outputText}
       };
     }
   }
+
+  /**
+   * Run user code against an array of test cases and return structured results.
+   */
+  async evaluateTestCases(
+    files: { filename: string; content: string }[],
+    testCases: { description: string; input: any; expectedOutput: any; type: string }[],
+  ): Promise<{
+    summary: { total: number; passed: number; failed: number };
+    results: {
+      index: number;
+      description: string;
+      passed: boolean;
+      input: any;
+      expectedOutput: any;
+      actualOutput: any;
+      executionTimeMs: number;
+      error?: string;
+      visible: boolean;
+    }[];
+  }> {
+    const results: any[] = [];
+
+    for (let i = 0; i < testCases.length; i++) {
+      const tc = testCases[i];
+      const startTime = Date.now();
+
+      try {
+        const execResult = await this.executeDynamicEndpoint(
+          files,
+          'POST',
+          '/test',
+          tc.input,
+        );
+        const elapsed = Date.now() - startTime;
+
+        const actual = execResult.output;
+        const passed = this.deepEqual(actual, tc.expectedOutput);
+
+        results.push({
+          index: i + 1,
+          description: tc.description,
+          passed,
+          input: tc.type === 'visible' ? tc.input : undefined,
+          expectedOutput: tc.type === 'visible' ? tc.expectedOutput : undefined,
+          actualOutput: tc.type === 'visible' ? actual : undefined,
+          executionTimeMs: elapsed,
+          error: execResult.status === 'fail' ? String(actual) : undefined,
+          visible: tc.type === 'visible',
+        });
+      } catch (err: any) {
+        const elapsed = Date.now() - startTime;
+        results.push({
+          index: i + 1,
+          description: tc.description,
+          passed: false,
+          input: tc.type === 'visible' ? tc.input : undefined,
+          expectedOutput: tc.type === 'visible' ? tc.expectedOutput : undefined,
+          actualOutput: undefined,
+          executionTimeMs: elapsed,
+          error: err.message || 'Unexpected execution error',
+          visible: tc.type === 'visible',
+        });
+      }
+    }
+
+    const passed = results.filter(r => r.passed).length;
+
+    return {
+      summary: {
+        total: results.length,
+        passed,
+        failed: results.length - passed,
+      },
+      results,
+    };
+  }
+
+  /**
+   * Deep equality check for comparing expected vs actual outputs.
+   * Handles primitives, arrays, and objects.
+   */
+  private deepEqual(a: any, b: any): boolean {
+    if (a === b) return true;
+    if (a == null || b == null) return false;
+    if (typeof a !== typeof b) return false;
+
+    if (Array.isArray(a) && Array.isArray(b)) {
+      if (a.length !== b.length) return false;
+      for (let i = 0; i < a.length; i++) {
+        if (!this.deepEqual(a[i], b[i])) return false;
+      }
+      return true;
+    }
+
+    if (typeof a === 'object' && typeof b === 'object') {
+      const keysA = Object.keys(a).sort();
+      const keysB = Object.keys(b).sort();
+      if (keysA.length !== keysB.length) return false;
+      for (let i = 0; i < keysA.length; i++) {
+        if (keysA[i] !== keysB[i]) return false;
+        if (!this.deepEqual(a[keysA[i]], b[keysB[i]])) return false;
+      }
+      return true;
+    }
+
+    return false;
+  }
 }

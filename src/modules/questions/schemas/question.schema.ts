@@ -42,7 +42,14 @@ export class TestCase {
   })
   type: string;
 
-  // Optional assertions for fullstack questions
+  // For DSA problems (LeetCode style)
+  @Prop({ type: MongooseSchema.Types.Mixed })
+  input?: any;
+
+  @Prop({ type: MongooseSchema.Types.Mixed })
+  expectedOutput?: any;
+
+  // Optional assertions for fullstack API questions
   @Prop({ type: Number })
   expectedStatus?: number;
 
