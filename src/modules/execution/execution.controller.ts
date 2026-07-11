@@ -1,11 +1,15 @@
-import { Controller, Post, Body, UseGuards, HttpCode, HttpStatus } from '@nestjs/common';
+import { Controller, Post, Body, UseGuards, HttpCode, HttpStatus, Req } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { ExecutionService } from './execution.service';
+import { UsersService } from '../users/users.service';
 
 @Controller('execution')
 @UseGuards(AuthGuard('jwt'))
 export class ExecutionController {
-  constructor(private readonly executionService: ExecutionService) {}
+  constructor(
+    private readonly executionService: ExecutionService,
+    private readonly usersService: UsersService,
+  ) {}
 
   /**
    * POST /api/execution/submit
@@ -13,12 +17,17 @@ export class ExecutionController {
    */
   @Post('submit')
   @HttpCode(HttpStatus.OK)
-  async submitCode(@Body() payload: { questionId: string; files: { filename: string; content: string }[] }) {
+  async submitCode(@Req() req: any, @Body() payload: { questionId: string; files: { filename: string; content: string }[] }) {
     if (!payload.files || payload.files.length === 0) {
       return { status: 'fail', output: 'No files provided for execution.' };
     }
 
     const result = await this.executionService.executeCode(payload.files);
+    
+    // Track progress if execution passed
+    if (result.status === 'pass' && payload.questionId) {
+      await this.usersService.markQuestionCompleted(req.user.userId, payload.questionId);
+    }
     
     return {
       message: 'Execution completed',

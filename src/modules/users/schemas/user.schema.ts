@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document } from 'mongoose';
+import { Document, Schema as MongooseSchema } from 'mongoose';
 import { USER_ROLES, type UserRole } from '../../../common/constants';
 
 // ============================
@@ -45,6 +45,9 @@ export class User extends Document {
     default: USER_ROLES.LEARNER,
   })
   role: UserRole;
+
+  @Prop({ type: [{ type: MongooseSchema.Types.ObjectId, ref: 'Question' }], default: [] })
+  completedQuestions: MongooseSchema.Types.ObjectId[];
 
   // Timestamps added by Mongoose
   createdAt: Date;

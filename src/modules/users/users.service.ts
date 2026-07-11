@@ -43,4 +43,14 @@ export class UsersService {
     });
     return user.save();
   }
+
+  /**
+   * Mark a question as completed by adding it to the user's completedQuestions array.
+   */
+  async markQuestionCompleted(userId: string, questionId: string): Promise<void> {
+    await this.userModel.findByIdAndUpdate(
+      userId,
+      { $addToSet: { completedQuestions: questionId } }
+    ).exec();
+  }
 }
