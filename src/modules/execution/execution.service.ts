@@ -26,6 +26,7 @@ export class ExecutionService {
       }
 
       let combinedCode = `
+        require('reflect-metadata');
         const __modules = {};
         function __require(name) {
            // Handle relative imports by stripping path if necessary, simple matching for this demo
@@ -39,7 +40,12 @@ export class ExecutionService {
       // 2. Compile TypeScript files to JavaScript and wrap in CommonJS IIFE
       for (const file of backendFiles) {
         const result = ts.transpileModule(file.content, {
-          compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2020 }
+          compilerOptions: { 
+            module: ts.ModuleKind.CommonJS, 
+            target: ts.ScriptTarget.ES2020,
+            experimentalDecorators: true,
+            emitDecoratorMetadata: true
+          }
         });
         
         const moduleName = file.filename.replace('.ts', '');
@@ -77,7 +83,8 @@ ${result.outputText}
         },
         require: require, // Allow requires for basic node modules
         exports: {},
-        module: { exports: {} }
+        module: { exports: {} },
+        Reflect: Reflect, // Provide Reflect API for decorators
       };
 
       vm.createContext(sandbox);
