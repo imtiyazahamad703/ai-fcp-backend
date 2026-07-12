@@ -26,10 +26,12 @@ export class NotesService {
     const uId = new Types.ObjectId(userId);
     const qId = new Types.ObjectId(questionId);
 
-    return this.noteModel.findOneAndUpdate(
+    const result = await this.noteModel.findOneAndUpdate(
       { userId: uId, questionId: qId },
       { content },
       { upsert: true, new: true },
     ).exec();
+
+    return result as Note;
   }
 }
