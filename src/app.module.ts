@@ -8,6 +8,7 @@ import { AiModule } from './modules/ai/ai.module';
 import { AdminModule } from './modules/admin/admin.module';
 import { ExecutionModule } from './modules/execution/execution.module';
 import { SubmissionsModule } from './modules/submissions/submissions.module';
+import { NotesModule } from './modules/notes/notes.module';
 import {
   appConfig,
   databaseConfig,
@@ -44,6 +45,7 @@ import {
     AdminModule,
     ExecutionModule,
     SubmissionsModule,
+    NotesModule,
   ],
 })
 export class AppModule {}
