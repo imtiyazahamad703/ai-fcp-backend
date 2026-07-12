@@ -11,17 +11,17 @@ import { User } from './schemas/user.schema';
 export class UsersService {
   constructor(
     @InjectModel(User.name) private readonly userModel: Model<User>,
-  ) {}
+  ) { }
 
   /**
    * Find a user by their email address.
    */
-  async findByEmail(email: string): Promise<User | null> {
+  async findByEmail(email: string) {
     return this.userModel.findOne({ email: email.toLowerCase() }).exec();
   }
 
   /**
-   * Find a user by their MongoDB ID.
+   *    * Find a user by their MongoDB ID.
    */
   async findById(id: string): Promise<User | null> {
     return this.userModel.findById(id).exec();
@@ -52,5 +52,15 @@ export class UsersService {
       userId,
       { $addToSet: { completedQuestions: questionId } }
     ).exec();
+  }
+
+  /**
+   * Find a user by a valid reset password token.
+   */
+  async findByResetToken(token: string) {
+    return this.userModel.findOne({
+      resetPasswordToken: token,
+      resetPasswordExpires: { $gt: new Date() },
+    }).exec();
   }
 }

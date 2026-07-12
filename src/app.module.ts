@@ -15,6 +15,7 @@ import {
   jwtConfig,
   aiConfig,
   corsConfig,
+  smtpConfig,
 } from './config/env.config';
 
 @Module({
@@ -22,7 +23,7 @@ import {
     // Environment Configuration
     ConfigModule.forRoot({
       isGlobal: true,
-      load: [appConfig, databaseConfig, jwtConfig, aiConfig, corsConfig],
+      load: [appConfig, databaseConfig, jwtConfig, aiConfig, corsConfig, smtpConfig],
       envFilePath: '.env',
     }),
 

@@ -3,9 +3,13 @@ import {
   UnauthorizedException,
   ConflictException,
   Logger,
+  BadRequestException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
+import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcrypt';
+import * as crypto from 'crypto';
+import * as nodemailer from 'nodemailer';
 import { UsersService } from '../users/users.service';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
@@ -24,6 +28,7 @@ export class AuthService {
   constructor(
     private readonly usersService: UsersService,
     private readonly jwtService: JwtService,
+    private readonly configService: ConfigService,
   ) {}
 
   /**
@@ -109,6 +114,75 @@ export class AuthService {
         role: user.role,
       },
     };
+  }
+
+  /**
+   * Request password reset email.
+   */
+  async forgotPassword(email: string) {
+    const user = await this.usersService.findByEmail(email);
+    if (!user) {
+      return { message: 'If that email is registered, a reset link has been sent.' };
+    }
+
+    const token = crypto.randomBytes(32).toString('hex');
+    user.resetPasswordToken = token;
+    user.resetPasswordExpires = new Date(Date.now() + 3600000);
+    await user.save();
+
+    const resetLink = `${this.configService.get('cors.origin')}/reset-password/${token}`;
+
+    const transporter = nodemailer.createTransport({
+      host: this.configService.get('smtp.host'),
+      port: this.configService.get('smtp.port'),
+      secure: true,
+      auth: {
+        user: this.configService.get('smtp.user'),
+        pass: this.configService.get('smtp.pass'),
+      },
+    });
+
+    try {
+      await transporter.sendMail({
+        from: `"AI-FCP Support" <${this.configService.get('smtp.user')}>`,
+        to: user.email,
+        subject: 'Password Reset Request',
+        html: `
+          <h3>Password Reset</h3>
+          <p>You requested a password reset. Please click the link below to set a new password:</p>
+          <a href="${resetLink}">${resetLink}</a>
+          <p>If you did not request this, please ignore this email.</p>
+        `,
+      });
+      this.logger.log(`Password reset email sent to: ${user.email}`);
+    } catch (error) {
+      this.logger.error(`Failed to send password reset email to ${user.email}`, error);
+      throw new BadRequestException('Failed to send email. Please try again later.');
+    }
+
+    return { message: 'If that email is registered, a reset link has been sent.' };
+  }
+
+  /**
+   * Reset password using token.
+   */
+  async resetPassword(token: string, newPassword: string) {
+    const user = await this.usersService.findByResetToken(token);
+
+    if (!user) {
+      throw new BadRequestException('Password reset token is invalid or has expired.');
+    }
+
+    const hashedPassword = await bcrypt.hash(newPassword, SALT_ROUNDS);
+    
+    user.password = hashedPassword;
+    user.resetPasswordToken = undefined;
+    user.resetPasswordExpires = undefined;
+    await user.save();
+
+    this.logger.log(`Password reset successful for user: ${user.email}`);
+
+    return { message: 'Password has been reset successfully.' };
   }
 
   /**

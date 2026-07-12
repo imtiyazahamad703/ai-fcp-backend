@@ -46,6 +46,12 @@ export class User extends Document {
   })
   role: UserRole;
 
+  @Prop()
+  resetPasswordToken?: string;
+
+  @Prop()
+  resetPasswordExpires?: Date;
+
   @Prop({ type: [{ type: MongooseSchema.Types.ObjectId, ref: 'Question' }], default: [] })
   completedQuestions: MongooseSchema.Types.ObjectId[];
 
