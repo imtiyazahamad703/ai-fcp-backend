@@ -34,7 +34,7 @@ export class SubmissionsService {
           evaluationSummary: evaluationSummary ?? null,
         },
       },
-      { upsert: true, new: true },
+      { upsert: true, returnDocument: 'after' },
     );
   }
 

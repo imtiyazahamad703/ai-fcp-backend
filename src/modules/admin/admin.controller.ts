@@ -34,20 +34,20 @@ export class AdminController {
 
   /**
    * POST /api/admin/questions/generate
-   * Generates a question JSON using Gemini API based on a topic.
+   * Generates a question JSON using Gemini API based on a userPrompt.
    * Does NOT save to database yet.
    */
   @Post('questions/generate')
   @HttpCode(HttpStatus.OK)
   async generateQuestion(@Body() dto: GenerateQuestionDto) {
-    const aiData = await this.aiService.generateQuestion(dto.topic, dto.type);
+    const aiData = await this.aiService.generateQuestion(dto.userPrompt, dto.type);
     
-    // Inject the topic and type back into the payload before returning
+    // Inject the userPrompt and type back into the payload before returning
     return {
       message: 'Question generated successfully',
       question: {
         ...aiData,
-        topic: dto.topic,
+        userPrompt: dto.userPrompt,
         type: dto.type,
       },
     };

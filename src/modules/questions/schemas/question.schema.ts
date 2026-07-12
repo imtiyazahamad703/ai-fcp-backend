@@ -88,7 +88,7 @@ export class Question extends Document {
   type: QuestionType;
 
   @Prop({ required: true, trim: true })
-  topic: string;
+  userPrompt: string;
 
   @Prop({ type: [String], default: [] })
   tags: string[];

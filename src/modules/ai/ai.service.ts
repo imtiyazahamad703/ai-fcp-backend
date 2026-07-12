@@ -23,10 +23,10 @@ export class AiService {
   }
 
   /**
-   * Generate a coding question based on a topic
+   * Generate a coding question based on a userPrompt
    */
-  async generateQuestion(topic: string, type: 'react' | 'nestjs' | 'fullstack') {
-    this.logger.log(`Generating ${type} question for topic: ${topic}`);
+  async generateQuestion(userPrompt: string, type: 'react' | 'nestjs' | 'fullstack') {
+    this.logger.log(`Generating ${type} question for userPrompt: ${userPrompt}`);
 
     try {
       const responseSchema: Schema = {
@@ -64,7 +64,7 @@ export class AiService {
       };
 
       const baseInstruction = `You are an Expert Senior Software Engineer and Technical Interviewer. Your task is to generate a production-ready coding exercise for an advanced AI-Powered Full-Stack Practice Platform.
-The user's raw input topic is: "${topic}".
+The user's raw input prompt is: "${userPrompt}".
 
 PLATFORM MECHANICS:
 - The platform evaluates learners not just on algorithms, but on actual feature development.
@@ -73,11 +73,12 @@ PLATFORM MECHANICS:
 - Files marked with 'editable: false' are supporting files (like interfaces, DTOs, or mock data) needed to make the code runnable.
 
 PROBLEM DESCRIPTION STANDARDS:
-- DO NOT just repeat the user's raw input. Often the user's input is poorly phrased or incomplete.
-- Rephrase and expand the topic into a highly professional, well-structured, easy-to-understand problem statement.
-- Write it so that any junior-to-mid level engineer can easily understand what they need to build.
-- IMPORTANT: You MUST include a "File Overview" section in the description. In this section, provide a short bulleted list of all the files (both editable and non-editable) you are providing. Briefly explain the purpose of each file and exactly what the user is expected to do in the editable files.
-- Strictly use Markdown (headers like ### Objective, ### Requirements, ### File Overview, bullet points, and bold text) to structure the description nicely.
+- Understand the user's raw intent perfectly. No matter how rough their prompt is, output a highly polished, beginner-friendly, and better-structured version of their request.
+- Keep the problem description extremely simple, clear, and direct (similar to classic LeetCode problems).
+- Do NOT add unnecessary "real-world" business jargon (e.g. do not turn "Two Sum" into "Transaction Reconciliation" unless explicitly asked).
+- You MUST provide clear Examples (e.g. Example 1: Input: ..., Output: ...) to explain the problem perfectly.
+- IMPORTANT: You MUST include a "File Overview" section in the description. You MUST list EVERY single file (both editable and non-editable) that you are providing, and write a short sentence explaining what each file is for.
+- Strictly use Markdown (headers like ### Objective, ### Examples, bullet points, and bold text) to structure the description nicely. DO NOT include a "Constraints" section.
 
 ENGINEERING STANDARDS:
 - Strictly use TypeScript. Avoid using 'any'.
@@ -105,7 +106,7 @@ CATEGORY SPECIFICS:`;
 
       const response = await this.ai.models.generateContent({
         model: this.model,
-        contents: `Create a ${type} coding question about ${topic}`,
+        contents: `Create a ${type} coding question based on this prompt: ${userPrompt}`,
         config: {
           responseMimeType: 'application/json',
           responseSchema: responseSchema,

@@ -49,7 +49,7 @@ export class QuestionsService {
    */
   async update(id: string, data: Partial<Question>): Promise<Question> {
     const question = await this.questionModel
-      .findByIdAndUpdate(id, data, { new: true })
+      .findByIdAndUpdate(id, data, { returnDocument: 'after' })
       .exec();
 
     if (!question) {

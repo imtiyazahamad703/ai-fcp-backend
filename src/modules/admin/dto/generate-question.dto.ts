@@ -3,7 +3,7 @@ import { IsNotEmpty, IsString, IsEnum } from 'class-validator';
 export class GenerateQuestionDto {
   @IsString()
   @IsNotEmpty()
-  topic: string;
+  userPrompt: string;
 
   @IsString()
   @IsEnum(['react', 'nestjs', 'fullstack'])

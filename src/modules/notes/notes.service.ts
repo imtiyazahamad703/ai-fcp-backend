@@ -19,7 +19,7 @@ export class NotesService {
   async findAllForUser(userId: string): Promise<Note[]> {
     return this.noteModel.find({
       userId: new Types.ObjectId(userId),
-    }).populate('questionId', 'title topic type').exec();
+    }).populate('questionId', 'title userPrompt type').exec();
   }
 
   async saveNote(userId: string, questionId: string, content: string): Promise<Note> {
@@ -29,7 +29,7 @@ export class NotesService {
     const result = await this.noteModel.findOneAndUpdate(
       { userId: uId, questionId: qId },
       { content },
-      { upsert: true, new: true },
+      { upsert: true, returnDocument: 'after' },
     ).exec();
 
     return result as Note;
