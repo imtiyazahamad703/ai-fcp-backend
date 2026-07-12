@@ -126,4 +126,38 @@ CATEGORY SPECIFICS:`;
       throw new InternalServerErrorException('Failed to generate question from AI');
     }
   }
+
+  /**
+   * Answer user query with context in workspace chatbot
+   */
+  async askQuestion(question: string, context: { title: string; description: string; currentCode: string }): Promise<string> {
+    try {
+      const systemInstruction = `You are a helpful coding assistant buddy for a learner on our coding platform.
+The learner is working on the coding question: "${context.title}".
+
+Problem Statement:
+${context.description}
+
+Here is their current code state (JSON format or file contents):
+${context.currentCode}
+
+Provide a short, encouraging, and clear guidance in Markdown. 
+Keep it concise (1-2 small paragraphs max). 
+Strict rule: DO NOT write the complete solution code directly. Instead, point out their syntax/logical errors, suggest steps to fix, or guide them towards the correct implementation.`;
+
+      const response = await this.ai.models.generateContent({
+        model: this.model,
+        contents: question,
+        config: {
+          systemInstruction: systemInstruction,
+          temperature: 0.7,
+        },
+      });
+
+      return response.text || "I'm not sure how to answer that. Could you try rephrasing?";
+    } catch (e) {
+      this.logger.error(`AI Chatbot query failed: ${e.message}`, e.stack);
+      return "I'm sorry, I'm having trouble connecting to my AI brain right now. Please try again in a bit.";
+    }
+  }
 }
