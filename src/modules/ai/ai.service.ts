@@ -90,16 +90,19 @@ CATEGORY SPECIFICS:`;
       if (type === 'react') {
         categoryInstruction = `- Focus on React.js, functional components, hooks, state management, and UI logic.
 - Typical editable file should be 'src/App.tsx' or a specific component.
-- Ensure the problem tests real-world frontend skills (e.g., form handling, data rendering, or Axios API simulation).`;
+- Ensure the problem tests real-world frontend skills (e.g., form handling, data rendering, or Axios API simulation).
+- STRICT RULE: You MUST leave the JSX input fields, form submission handlers, and Axios API calls as TODOs. The learner must write these. DO NOT provide the solution for these parts.`;
       } else if (type === 'nestjs') {
         categoryInstruction = `- Focus on NestJS, REST APIs, Services, and DTO validation.
 - Enforce the rule of Thin Controllers and logic inside Services.
-- Typical editable files should be 'src/feature/feature.controller.ts' and 'src/feature/feature.service.ts'.`;
+- Typical editable files should be 'src/feature/feature.controller.ts' and 'src/feature/feature.service.ts'.
+- STRICT RULE: You MUST leave the core logical parts of the endpoint and service methods as TODOs. The learner must write the backend logic. DO NOT provide the solution for these parts.`;
       } else if (type === 'fullstack') {
         categoryInstruction = `- Focus on Full-Stack integration.
 - Provide at least one editable frontend file (e.g., React component making an Axios call) and one editable backend file (e.g., NestJS Service processing that specific request).
 - Ensure the frontend API call perfectly matches the backend route.
-- STRICT RULE: The backend starter code MUST be written strictly using the NestJS framework (using @Controller(), @Injectable(), modules, etc.). DO NOT use plain Express.js.`;
+- STRICT RULE: The backend starter code MUST be written strictly using the NestJS framework (using @Controller(), @Injectable(), modules, etc.). DO NOT use plain Express.js.
+- STRICT RULE: For the frontend, leave input fields and Axios calls as TODOs. For the backend, leave the endpoint logic as TODOs. DO NOT provide the solutions for editable files.`;
       }
 
       const systemInstruction = `${baseInstruction}\n${categoryInstruction}\n\nEnsure test case descriptions clearly explain the expected behavior. Return STRICTLY valid JSON matching the provided schema without any markdown wrapping the JSON.`;
