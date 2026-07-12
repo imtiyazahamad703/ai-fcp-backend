@@ -14,11 +14,11 @@ export class AiService {
 
   constructor(private readonly configService: ConfigService) {
     const apiKey = this.configService.get<string>('ai.gemini.apiKey');
-    
+
     if (!apiKey) {
       this.logger.warn('GEMINI_API_KEY is not configured. AI generation will fail.');
     }
-    
+
     this.ai = new GoogleGenAI({ apiKey });
   }
 
@@ -76,8 +76,7 @@ PROBLEM DESCRIPTION STANDARDS:
 - DO NOT just repeat the user's raw input. Often the user's input is poorly phrased or incomplete.
 - Rephrase and expand the topic into a highly professional, well-structured, easy-to-understand problem statement.
 - Write it so that any junior-to-mid level engineer can easily understand what they need to build.
-- IMPORTANT: You MUST include a "File Overview" section in the description. In this section, provide a short bulleted list of all the files (both editable and non-editable) you are providing. Briefly explain the purpose of each file and exactly what the user is expected to do in the editable files.
-- Strictly use Markdown (headers like ### Objective, ### Requirements, ### File Overview, bullet points, and bold text) to structure the description nicely.
+- Strictly use Markdown (headers like ### Objective, ### Requirements, bullet points, and bold text) to structure the description nicely.
 
 ENGINEERING STANDARDS:
 - Strictly use TypeScript. Avoid using 'any'.
@@ -120,7 +119,7 @@ CATEGORY SPECIFICS:`;
 
       const generatedData = JSON.parse(response.text);
       return generatedData;
-      
+
     } catch (error) {
       this.logger.error(`AI Generation failed: ${error.message}`, error.stack);
       throw new InternalServerErrorException('Failed to generate question from AI');
