@@ -14,6 +14,20 @@ export class UsersService {
   ) { }
 
   /**
+   * Find all admins in the system.
+   */
+  async findAllAdmins(): Promise<User[]> {
+    return this.userModel.find({ role: 'admin' }).select('-password -__v').exec();
+  }
+
+  /**
+   * Delete a user by ID.
+   */
+  async delete(id: string): Promise<void> {
+    await this.userModel.findByIdAndDelete(id).exec();
+  }
+
+  /**
    * Find a user by their email address.
    */
   async findByEmail(email: string) {

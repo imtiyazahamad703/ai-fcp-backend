@@ -16,7 +16,10 @@ import { Roles } from '../../common/decorators/roles.decorator';
 import { USER_ROLES } from '../../common/constants';
 import { AiService } from '../ai/ai.service';
 import { QuestionsService } from '../questions/questions.service';
+import { UsersService } from '../users/users.service';
+import { RegisterDto } from '../auth/dto/register.dto';
 import { GenerateQuestionDto } from './dto/generate-question.dto';
+import * as bcrypt from 'bcrypt';
 import { Question } from '../questions/schemas/question.schema';
 
 // ============================
@@ -30,7 +33,50 @@ export class AdminController {
   constructor(
     private readonly aiService: AiService,
     private readonly questionsService: QuestionsService,
+    private readonly usersService: UsersService,
   ) {}
+
+  /**
+   * GET /api/admin/users
+   * Lists all admins.
+   */
+  @Get('users')
+  async getAdmins() {
+    const admins = await this.usersService.findAllAdmins();
+    return { admins };
+  }
+
+  /**
+   * POST /api/admin/users
+   * Creates a new admin.
+   */
+  @Post('users')
+  @HttpCode(HttpStatus.CREATED)
+  async createAdmin(@Body() dto: RegisterDto) {
+    const hashedPassword = await bcrypt.hash(dto.password, 12);
+    
+    const admin = await this.usersService.create({
+      name: dto.name,
+      email: dto.email,
+      password: hashedPassword,
+      role: 'admin',
+    });
+    
+    return {
+      message: 'Admin created successfully',
+      admin: { _id: admin._id, name: admin.name, email: admin.email, role: admin.role },
+    };
+  }
+
+  /**
+   * DELETE /api/admin/users/:id
+   * Deletes an admin.
+   */
+  @Delete('users/:id')
+  async deleteAdmin(@Param('id') id: string) {
+    await this.usersService.delete(id);
+    return { message: 'Admin deleted successfully' };
+  }
 
   /**
    * POST /api/admin/questions/generate
