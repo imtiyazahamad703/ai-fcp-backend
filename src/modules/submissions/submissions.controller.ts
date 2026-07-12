@@ -8,6 +8,16 @@ export class SubmissionsController {
   constructor(private readonly submissionsService: SubmissionsService) {}
 
   /**
+   * GET /api/submissions
+   * Returns all submissions by the logged-in user.
+   */
+  @Get()
+  async getMySubmissions(@Req() req: any) {
+    const submissions = await this.submissionsService.findAllByUser(req.user._id);
+    return { submissions };
+  }
+
+  /**
    * GET /api/submissions/:questionId
    * Returns the current user's last submission for a question.
    * Frontend uses this to pre-fill the editor on workspace load.
