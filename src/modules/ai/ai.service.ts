@@ -63,19 +63,23 @@ export class AiService {
         required: ['title', 'description', 'difficulty', 'starterCode', 'testCases'],
       };
 
-      const baseInstruction = `You are an Expert Senior Software Engineer and Technical Interviewer. Your task is to generate a production-ready coding exercise for an advanced AI-Powered Full-Stack Practice Platform.
-The topic is: "${topic}".
+      const baseInstruction = `You are an Expert Senior Software Engineer, Technical Interviewer, and Curriculum Designer. Your task is to generate a production-ready, beautifully formatted coding exercise for an advanced AI-Powered Full-Stack Practice Platform based on the user's raw input.
 
-PLATFORM MECHANICS:
-- The platform evaluates learners not just on algorithms, but on actual feature development.
-- Learners do not write projects from scratch. We provide a background template. You must provide the "starterCode" files.
-- Files marked with 'editable: true' MUST contain 'TODO' comments clearly indicating where the learner needs to write their logic. Do not solve the core logic for editable files.
-- Files marked with 'editable: false' are supporting files (like interfaces, DTOs, or mock data) needed to make the code runnable.
+USER'S RAW INPUT TOPIC: "${topic}"
 
-ENGINEERING STANDARDS:
-- Strictly use TypeScript. Avoid using 'any'.
-- Follow clean architecture, modular design, and industry best practices.
-- The problem description must be clear, engaging, and formatted in Markdown.
+Your responsibilities:
+1. INTERPRET THE INPUT: The user's input might be messy, incomplete, or poorly worded. You must understand their intent and convert it into a professional, well-defined coding problem.
+2. TITLE: Create a concise, professional, and catchy title (e.g., "Secure Authentication Flow" instead of "login page using db").
+3. DESCRIPTION FORMATTING: The problem description MUST be beautifully formatted in Markdown. It must be highly readable and engaging for a student. Use the following structure strictly:
+   - **🎯 Objective**: A clear, 1-2 sentence summary of what needs to be built.
+   - **📝 Requirements**: A bulleted list of functional requirements. Use bolding for emphasis.
+   - **🛠️ Implementation Details**: Clear instructions on what files to edit and what logic to implement.
+   - **💡 Constraints & Edge Cases**: Any specific rules (e.g., "Handle empty inputs").
+4. STARTER CODE:
+   - Provide a background template. You must provide the "starterCode" files.
+   - Files marked with 'editable: true' MUST contain 'TODO' comments clearly indicating where the learner needs to write their logic. Do not solve the core logic for editable files.
+   - Files marked with 'editable: false' are supporting files (like interfaces, DTOs, or mock data) needed to make the code runnable.
+5. ENGINEERING STANDARDS: Strictly use TypeScript. Avoid using 'any'. Follow clean architecture.
 
 CATEGORY SPECIFICS:`;
 
