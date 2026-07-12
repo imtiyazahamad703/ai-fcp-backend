@@ -28,11 +28,17 @@ export class ExecutionService {
       let combinedCode = `
         require('reflect-metadata');
         const __modules = {};
+        const __factories = {};
         function __require(name) {
-           // Handle relative imports by stripping path if necessary, simple matching for this demo
-           const basename = name.split('/').pop().replace('.ts', '');
+           const basename = name.split('/').pop().replace('.ts', '').replace('.js', '');
            const modKey = Object.keys(__modules).find(k => k.endsWith(basename));
-           if (modKey) return __modules[modKey].exports;
+           if (modKey) {
+             if (!__modules[modKey].loaded) {
+                __modules[modKey].loaded = true;
+                __factories[modKey](__modules[modKey].exports, __require, __modules[modKey], modKey, '');
+             }
+             return __modules[modKey].exports;
+           }
            return require(name);
         }
       `;
@@ -51,12 +57,22 @@ export class ExecutionService {
         const moduleName = file.filename.replace('.ts', '');
         combinedCode += `
 // File: ${file.filename}
-__modules['${moduleName}'] = { exports: {} };
-(function(exports, require, module, __filename, __dirname) {
+__modules['${moduleName}'] = { exports: {}, loaded: false };
+__factories['${moduleName}'] = function(exports, require, module, __filename, __dirname) {
 ${result.outputText}
-})(__modules['${moduleName}'].exports, __require, __modules['${moduleName}'], '${file.filename}', '');
+};
         `;
       }
+
+      combinedCode += `
+        // Evaluate all modules to register decorators, etc.
+        for (const modKey of Object.keys(__modules)) {
+           if (!__modules[modKey].loaded) {
+              __modules[modKey].loaded = true;
+              __factories[modKey](__modules[modKey].exports, __require, __modules[modKey], modKey, '');
+           }
+        }
+      `;
 
       // Add a simple mock test script to invoke the classes if not provided by AI
       combinedCode += `
@@ -134,10 +150,17 @@ ${result.outputText}
       let combinedCode = `
         require('reflect-metadata');
         const __modules = {};
+        const __factories = {};
         function __require(name) {
            const basename = name.split('/').pop().replace('.ts', '').replace('.js', '');
            const modKey = Object.keys(__modules).find(k => k.endsWith(basename));
-           if (modKey) return __modules[modKey].exports;
+           if (modKey) {
+             if (!__modules[modKey].loaded) {
+                __modules[modKey].loaded = true;
+                __factories[modKey](__modules[modKey].exports, __require, __modules[modKey], modKey, '');
+             }
+             return __modules[modKey].exports;
+           }
            try { return require(name); } catch(e) { return {}; }
         }
       `;
@@ -154,12 +177,22 @@ ${result.outputText}
         
         const moduleName = file.filename.replace('.ts', '');
         combinedCode += `
-__modules['${moduleName}'] = { exports: {} };
-(function(exports, require, module, __filename, __dirname) {
+__modules['${moduleName}'] = { exports: {}, loaded: false };
+__factories['${moduleName}'] = function(exports, require, module, __filename, __dirname) {
 ${result.outputText}
-})(__modules['${moduleName}'].exports, __require, __modules['${moduleName}'], '${file.filename}', '');
+};
         `;
       }
+
+      combinedCode += `
+        // Evaluate all modules to register decorators, etc.
+        for (const modKey of Object.keys(__modules)) {
+           if (!__modules[modKey].loaded) {
+              __modules[modKey].loaded = true;
+              __factories[modKey](__modules[modKey].exports, __require, __modules[modKey], modKey, '');
+           }
+        }
+      `;
 
       // Safely serialize payload (handles undefined, null, arrays, objects, primitives)
       const safePayload = (body !== undefined && body !== null) ? JSON.stringify(body) : '{}';
