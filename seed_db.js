@@ -32,7 +32,7 @@ async function seed() {
       // Only set createdAt if the document is being inserted
       const updateDoc = {
         $unset: { difficulty: 1 },
-        $set: q,
+        $set: { ...q, folder: 'leetcode 75 blind questions' },
         $setOnInsert: { createdAt: new Date() }
       };
 

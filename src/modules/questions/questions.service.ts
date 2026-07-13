@@ -26,6 +26,13 @@ export class QuestionsService {
   }
 
   /**
+   * Find all distinct folders.
+   */
+  async getFolders(): Promise<string[]> {
+    return this.questionModel.distinct('folder').exec();
+  }
+
+  /**
    * Find a specific question by ID.
    */
   async findById(id: string): Promise<Question> {

@@ -28,6 +28,17 @@ export class QuestionsController {
   }
 
   /**
+   * GET /api/questions/folders
+   * Get all unique folders/collections.
+   */
+  @Get('folders')
+  async getFolders() {
+    const folders = await this.questionsService.getFolders();
+    // Filter out null/undefined or empty strings if any exist
+    return { folders: folders.filter(f => f && f.trim() !== '') };
+  }
+
+  /**
    * GET /api/questions/:id
    * Get a specific published question by ID.
    */

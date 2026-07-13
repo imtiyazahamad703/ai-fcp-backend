@@ -71,7 +71,8 @@ export class Question extends Document {
   @Prop({ required: true })
   description: string;
 
-
+  @Prop({ type: String, default: 'Uncategorized' })
+  folder: string;
 
   @Prop({
     type: String,
