@@ -2,6 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Question } from './schemas/question.schema';
+import { Folder } from './schemas/folder.schema';
 import { RESPONSE_MESSAGES } from '../../common/constants';
 
 // ============================
@@ -12,7 +13,8 @@ import { RESPONSE_MESSAGES } from '../../common/constants';
 export class QuestionsService {
   constructor(
     @InjectModel(Question.name) private readonly questionModel: Model<Question>,
-  ) {}
+    @InjectModel(Folder.name) private readonly folderModel: Model<Folder>,
+  ) { }
 
   /**
    * Find all questions (can be filtered by status/type).
@@ -29,7 +31,33 @@ export class QuestionsService {
    * Find all distinct folders.
    */
   async getFolders(): Promise<string[]> {
-    return this.questionModel.distinct('folder').exec();
+    const folders = await this.folderModel.find().sort({ createdAt: 1 }).exec();
+    return folders.map(f => f.name);
+  }
+
+  /**
+   * Create a new folder.
+   */
+  async createFolder(name: string): Promise<string> {
+    try {
+      const folder = new this.folderModel({ name });
+      await folder.save();
+      return folder.name;
+    } catch (error: any) {
+      // Ignore duplicate key error (code 11000)
+      if (error.code === 11000) {
+        return name;
+      }
+      throw error;
+    }
+  }
+
+  /**
+   * Delete a folder and move its questions to Practice Coding Challenges.
+   */
+  async deleteFolder(name: string): Promise<void> {
+    await this.folderModel.deleteOne({ name }).exec();
+    await this.questionModel.updateMany({ folder: name }, { folder: 'Practice Coding Challenges' }).exec();
   }
 
   /**

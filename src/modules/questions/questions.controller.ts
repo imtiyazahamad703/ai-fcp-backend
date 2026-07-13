@@ -1,4 +1,4 @@
-import { Controller, Get, Param, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Put, Delete, Body, Param, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { QuestionsService } from './questions.service';
 
@@ -36,6 +36,21 @@ export class QuestionsController {
     const folders = await this.questionsService.getFolders();
     // Filter out null/undefined or empty strings if any exist
     return { folders: folders.filter(f => f && f.trim() !== '') };
+  }
+
+  @Post('folders')
+  async createFolder(@Body('name') name: string) {
+    if (!name || typeof name !== 'string') {
+      throw new Error('Folder name is required and must be a string');
+    }
+    const createdName = await this.questionsService.createFolder(name);
+    return { name: createdName };
+  }
+
+  @Delete('folders/:name')
+  async deleteFolder(@Param('name') name: string) {
+    await this.questionsService.deleteFolder(name);
+    return { success: true };
   }
 
   /**
