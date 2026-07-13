@@ -77,7 +77,11 @@ PROBLEM DESCRIPTION STANDARDS:
 - Keep the problem description extremely simple, clear, and direct (similar to classic LeetCode problems).
 - Do NOT add unnecessary "real-world" business jargon (e.g. do not turn "Two Sum" into "Transaction Reconciliation" unless explicitly asked).
 - You MUST provide clear Examples (e.g. Example 1: Input: ..., Output: ...) to explain the problem perfectly.
-- IMPORTANT: You MUST include a "File Overview" section in the description. You MUST list EVERY single file (both editable and non-editable) that you are providing, and write a short sentence explaining what each file is for.
+- IMPORTANT: You MUST include a "File Overview" section at the end of the description. You MUST list EVERY single file (both editable and non-editable) that you are providing.
+- STRICT FORMAT FOR FILE OVERVIEW:
+  Use the following format for each file:
+  * **\`filename.ext\` (EDITABLE)**: Explanation here... (if editable: true)
+  * **\`filename.ext\` (READ-ONLY)**: Explanation here... (if editable: false)
 - Strictly use Markdown (headers like ### Objective, ### Examples, bullet points, and bold text) to structure the description nicely. DO NOT include a "Constraints" section.
 
 ENGINEERING STANDARDS:
