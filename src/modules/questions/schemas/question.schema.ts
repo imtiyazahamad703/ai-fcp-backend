@@ -1,10 +1,8 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Schema as MongooseSchema } from 'mongoose';
 import {
-  QUESTION_DIFFICULTY,
   QUESTION_TYPE,
   QUESTION_STATUS,
-  type QuestionDifficulty,
   type QuestionType,
   type QuestionStatus,
 } from '../../../common/constants';
@@ -73,12 +71,7 @@ export class Question extends Document {
   @Prop({ required: true })
   description: string;
 
-  @Prop({
-    type: String,
-    enum: Object.values(QUESTION_DIFFICULTY),
-    required: true,
-  })
-  difficulty: QuestionDifficulty;
+
 
   @Prop({
     type: String,

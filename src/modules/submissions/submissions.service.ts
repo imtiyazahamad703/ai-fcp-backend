@@ -33,6 +33,7 @@ export class SubmissionsService {
           status,
           evaluationSummary: evaluationSummary ?? null,
         },
+        $inc: { attempts: 1 }
       },
       { upsert: true, returnDocument: 'after' },
     );

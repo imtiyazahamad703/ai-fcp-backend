@@ -42,6 +42,10 @@ export class Submission extends Document {
     failed: number;
   };
 
+  /** Number of times the user has submitted this question */
+  @Prop({ type: Number, default: 0 })
+  attempts: number;
+
   createdAt: Date;
   updatedAt: Date;
 }
